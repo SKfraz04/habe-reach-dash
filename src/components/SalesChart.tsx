@@ -15,9 +15,9 @@ interface SalesChartProps {
 }
 
 const chartOptions = [
-  { value: "volumeGenerated", label: "Volume Generated (USDT)", color: "#3b82f6" },
-  { value: "earnings", label: "Earnings Over Time (USDT)", color: "#10b981" },
-  { value: "tokensDistributed", label: "Tokens Distributed (HABE)", color: "#f59e0b" },
+  { value: "volumeGenerated", label: "Volume Generated (USDT)", color: "hsl(260 60% 65%)" },
+  { value: "earnings", label: "Earnings Over Time (USDT)", color: "hsl(142 76% 45%)" },
+  { value: "tokensDistributed", label: "Tokens Distributed (HABE)", color: "hsl(35 91% 62%)" },
 ];
 
 const timePeriods = [
@@ -76,16 +76,16 @@ export function SalesChart({ data }: SalesChartProps) {
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="date" 
-                stroke="#64748b"
+                stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis 
-                stroke="#64748b"
+                stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -100,9 +100,9 @@ export function SalesChart({ data }: SalesChartProps) {
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-white p-3 border border-border rounded-lg shadow-lg">
-                        <p className="text-sm font-medium">{label}</p>
-                        <p className="text-sm" style={{ color: currentOption?.color }}>
+                      <div className="bg-card border border-border rounded-lg shadow-admin-lg p-3 z-50">
+                        <p className="text-sm font-medium text-card-foreground">{label}</p>
+                        <p className="text-sm text-card-foreground" style={{ color: currentOption?.color }}>
                           {formatTooltipValue(payload[0].value as number, currentOption?.label || "")[0]}
                         </p>
                       </div>
