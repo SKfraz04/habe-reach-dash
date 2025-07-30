@@ -5,11 +5,13 @@ import { KPICards } from "@/components/KPICards";
 import { SalesChart } from "@/components/SalesChart";
 import { RecentTransactions } from "@/components/RecentTransactions";
 
-// Sample data for demonstration
+const userDataFromStorage = JSON.parse(localStorage.getItem('userData') || '{}');
+console.log('User Data from localStorage:', userDataFromStorage?.data);
+
 const managerData = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  uniqueUrl: "https://platform.habe.io/ref/johndoe123",
+  name: userDataFromStorage?.data?.manager?.name,
+  email: userDataFromStorage?.data?.manager?.email,
+  uniqueUrl: `https://habe-ico.zip2box.com/?ref=${userDataFromStorage?.data?.manager?.refCode}`,
   stats: {
     totalVolumeGenerated: 2456789.50,
     totalReferrals: 127,

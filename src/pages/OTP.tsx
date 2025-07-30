@@ -70,20 +70,17 @@ export default function OTP() {
 
       const data = await response.json();
       
-      // Store authentication token if provided in response
+      localStorage.setItem('userData', JSON.stringify(data));
       if (data.token) {
         localStorage.setItem('authToken', data.token);
       }
       
-      // Clear login email from localStorage
       localStorage.removeItem('loginEmail');
       
       toast({
         title: "Success",
         description: "OTP verified successfully!",
       });
-
-      // Navigate to dashboard
       navigate("/dashboard");
       
     } catch (error) {
