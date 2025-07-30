@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Copy, ExternalLink, Eye, ArrowUpDown } from 'lucide-react';
+import { Copy, Eye, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { WithdrawalDetailsModal } from './WithdrawalDetailsModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Withdrawal {
   id: number;
@@ -44,7 +43,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
 }) => {
   const { toast } = useToast();
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isRemarksModalOpen, setIsRemarksModalOpen] = useState(false);
 
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text);
@@ -69,14 +68,9 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const truncateHash = (hash: string | null) => {
-    if (!hash) return 'N/A';
-    return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
-  };
-
-  const handleViewDetails = (withdrawal: Withdrawal) => {
+  const handleViewRemarks = (withdrawal: Withdrawal) => {
     setSelectedWithdrawal(withdrawal);
-    setIsDetailsModalOpen(true);
+    setIsRemarksModalOpen(true);
   };
 
   const handleSort = (column: string) => {
@@ -93,28 +87,20 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
             <TableHeader>
               <TableRow className="border-border/50 hover:bg-background/50">
                 <TableHead className="text-foreground font-semibold">Sr. No</TableHead>
-                <TableHead className="text-foreground font-semibold">
-                  <Button variant="ghost" onClick={() => handleSort('withdrawalDate')} className="h-auto p-0 font-semibold">
-                    Withdrawal Date <ArrowUpDown className="ml-1 h-3 w-3" />
-                  </Button>
-                </TableHead>
                 <TableHead className="text-foreground font-semibold">Manager Name</TableHead>
                 <TableHead className="text-foreground font-semibold">Manager Email</TableHead>
                 <TableHead className="text-foreground font-semibold">Wallet Address</TableHead>
                 <TableHead className="text-foreground font-semibold">
                   <Button variant="ghost" onClick={() => handleSort('amount')} className="h-auto p-0 font-semibold">
-                    Amount (USDT) <ArrowUpDown className="ml-1 h-3 w-3" />
+                    Withdrawal Amount <ArrowUpDown className="ml-1 h-3 w-3" />
                   </Button>
                 </TableHead>
-                <TableHead className="text-foreground font-semibold">Transaction Hash</TableHead>
                 <TableHead className="text-foreground font-semibold">
-                  <Button variant="ghost" onClick={() => handleSort('status')} className="h-auto p-0 font-semibold">
-                    Status <ArrowUpDown className="ml-1 h-3 w-3" />
+                  <Button variant="ghost" onClick={() => handleSort('withdrawalDate')} className="h-auto p-0 font-semibold">
+                    Withdrawal Date <ArrowUpDown className="ml-1 h-3 w-3" />
                   </Button>
                 </TableHead>
-                <TableHead className="text-foreground font-semibold">Remark</TableHead>
-                <TableHead className="text-foreground font-semibold">Processing Date</TableHead>
-                <TableHead className="text-foreground font-semibold">Actions</TableHead>
+                <TableHead className="text-foreground font-semibold">Remarks</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -125,14 +111,6 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
                 >
                   <TableCell className="font-mono text-sm text-muted-foreground">
                     {startIndex + index + 1}
-                  </TableCell>
-                  <TableCell className="text-foreground">
-                    <div className="text-sm">
-                      {new Date(withdrawal.withdrawalDate).toLocaleDateString()}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(withdrawal.withdrawalDate).toLocaleTimeString()}
-                    </div>
                   </TableCell>
                   <TableCell className="text-foreground font-medium">
                     {withdrawal.managerName}
@@ -158,60 +136,22 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
                   <TableCell className="text-foreground font-semibold">
                     ${withdrawal.amount.toFixed(2)}
                   </TableCell>
-                  <TableCell>
-                    {withdrawal.transactionHash ? (
-                      <div className="flex items-center gap-2">
-                        <code className="text-xs font-mono bg-background/50 px-2 py-1 rounded">
-                          {truncateHash(withdrawal.transactionHash)}
-                        </code>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyToClipboard(withdrawal.transactionHash!, 'Transaction hash')}
-                          className="h-6 w-6 p-0"
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => window.open(`https://etherscan.io/tx/${withdrawal.transactionHash}`, '_blank')}
-                          className="h-6 w-6 p-0"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">Pending</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={`${getStatusColor(withdrawal.status)} capitalize`}>
-                      {withdrawal.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm max-w-32 truncate">
-                    {withdrawal.remark}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {withdrawal.processingDate ? (
-                      <div>
-                        <div>{new Date(withdrawal.processingDate).toLocaleDateString()}</div>
-                        <div className="text-xs">{new Date(withdrawal.processingDate).toLocaleTimeString()}</div>
-                      </div>
-                    ) : (
-                      'N/A'
-                    )}
+                  <TableCell className="text-foreground">
+                    <div className="text-sm">
+                      {new Date(withdrawal.withdrawalDate).toLocaleDateString()}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(withdrawal.withdrawalDate).toLocaleTimeString()}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleViewDetails(withdrawal)}
-                      className="h-8 px-2"
+                      onClick={() => handleViewRemarks(withdrawal)}
+                      className="h-8 w-8 p-0"
                     >
-                      <Eye className="h-3 w-3 mr-1" />
-                      Details
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -264,11 +204,20 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
         </div>
       </div>
 
-      <WithdrawalDetailsModal
-        withdrawal={selectedWithdrawal}
-        isOpen={isDetailsModalOpen}
-        onClose={() => setIsDetailsModalOpen(false)}
-      />
+      <Dialog open={isRemarksModalOpen} onOpenChange={setIsRemarksModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Admin Remarks</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {selectedWithdrawal?.adminRemarks ? (
+              <p className="text-sm text-foreground">{selectedWithdrawal.adminRemarks}</p>
+            ) : (
+              <p className="text-sm text-muted-foreground">No remarks</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
