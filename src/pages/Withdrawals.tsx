@@ -116,7 +116,7 @@ const Withdrawals = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-gradient-to-br from-primary/20 to-primary/5 p-6 rounded-lg border border-primary/20">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/20 rounded-lg">
@@ -140,34 +140,6 @@ const Withdrawals = () => {
                     <p className="text-sm text-muted-foreground">Total Withdrawn</p>
                     <p className="text-xl font-bold text-green-400">
                       ${summary.totalWithdrawn.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 p-6 rounded-lg border border-yellow-500/20">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-500/20 rounded-lg">
-                    <DollarSign className="h-5 w-5 text-yellow-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Pending Amount</p>
-                    <p className="text-xl font-bold text-yellow-400">
-                      ${summary.pendingAmount.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-violet-500/20 to-violet-500/5 p-6 rounded-lg border border-violet-500/20">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-violet-500/20 rounded-lg">
-                    <DollarSign className="h-5 w-5 text-violet-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">This Month</p>
-                    <p className="text-xl font-bold text-violet-400">
-                      ${summary.thisMonthWithdrawals.toFixed(2)}
                     </p>
                   </div>
                 </div>

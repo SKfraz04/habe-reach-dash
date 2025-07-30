@@ -24,8 +24,6 @@ export const WithdrawalFilters: React.FC<WithdrawalFiltersProps> = ({
   const [status, setStatus] = useState('all');
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
-  const [minAmount, setMinAmount] = useState('');
-  const [maxAmount, setMaxAmount] = useState('');
 
   const handleFiltersChange = () => {
     onFiltersChange({
@@ -33,8 +31,6 @@ export const WithdrawalFilters: React.FC<WithdrawalFiltersProps> = ({
       status,
       dateFrom,
       dateTo,
-      minAmount: minAmount ? parseFloat(minAmount) : undefined,
-      maxAmount: maxAmount ? parseFloat(maxAmount) : undefined,
     });
   };
 
@@ -43,16 +39,14 @@ export const WithdrawalFilters: React.FC<WithdrawalFiltersProps> = ({
     setStatus('all');
     setDateFrom(undefined);
     setDateTo(undefined);
-    setMinAmount('');
-    setMaxAmount('');
     onFiltersChange({});
   };
 
   React.useEffect(() => {
     handleFiltersChange();
-  }, [searchTerm, status, dateFrom, dateTo, minAmount, maxAmount]);
+  }, [searchTerm, status, dateFrom, dateTo]);
 
-  const hasActiveFilters = searchTerm || status !== 'all' || dateFrom || dateTo || minAmount || maxAmount;
+  const hasActiveFilters = searchTerm || status !== 'all' || dateFrom || dateTo;
 
   return (
     <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6 space-y-4">
@@ -157,23 +151,6 @@ export const WithdrawalFilters: React.FC<WithdrawalFiltersProps> = ({
           </Popover>
         </div>
 
-        {/* Amount Range */}
-        <div className="flex gap-2">
-          <Input
-            placeholder="Min USDT"
-            value={minAmount}
-            onChange={(e) => setMinAmount(e.target.value)}
-            type="number"
-            className="w-32 bg-background/80 border-border/50"
-          />
-          <Input
-            placeholder="Max USDT"
-            value={maxAmount}
-            onChange={(e) => setMaxAmount(e.target.value)}
-            type="number"
-            className="w-32 bg-background/80 border-border/50"
-          />
-        </div>
 
         {/* Clear Filters */}
         {hasActiveFilters && (
