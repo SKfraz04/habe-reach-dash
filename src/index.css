@@ -86,3 +86,9 @@
     @apply bg-background text-foreground;
   }
 }
+.theme-bg{
+  background-color:#a23ac3;
+}
+.theme-bg2{
+  background-color:#fec5ff;
+}

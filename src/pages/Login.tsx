@@ -71,13 +71,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center theme-bg px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
-            <div className="h-12 w-12 bg-primary rounded-lg flex items-center justify-center shadow-lg">
-              <div className="h-6 w-6 bg-white" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
-            </div>
+           <img src="../src/Assets/Images/Habe.png" alt="logo" width={100} height={100} />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome to HABE</CardTitle>
           <CardDescription>
@@ -102,7 +100,7 @@ export default function Login() {
           
           <Button 
             onClick={handleLogin}
-            className="w-full"
+            className="w-full theme-bg"
             size="lg"
             disabled={isLoading}
           >
