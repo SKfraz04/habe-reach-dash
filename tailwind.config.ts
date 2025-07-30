@@ -26,19 +26,33 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					hover: 'hsl(var(--primary-hover))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					foreground: 'hsl(var(--secondary-foreground))',
+					hover: 'hsl(var(--secondary-hover))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))',
+					light: 'hsl(var(--success-light))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))',
+					light: 'hsl(var(--warning-light))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+					foreground: 'hsl(var(--destructive-foreground))',
+					light: 'hsl(var(--destructive-light))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+					foreground: 'hsl(var(--muted-foreground))',
+					light: 'hsl(var(--muted-light))'
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
@@ -52,16 +66,25 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
+				admin: {
+					sidebar: 'hsl(var(--sidebar-background))',
+					'sidebar-text': 'hsl(var(--sidebar-foreground))',
+					'sidebar-accent': 'hsl(var(--sidebar-accent))',
+					'sidebar-border': 'hsl(var(--sidebar-border))'
 				}
+			},
+			backgroundImage: {
+				'gradient-volume': 'var(--gradient-volume)',
+				'gradient-referrals': 'var(--gradient-referrals)',
+				'gradient-earnings': 'var(--gradient-earnings)',
+				'gradient-commission': 'var(--gradient-commission)',
+				'gradient-tokens': 'var(--gradient-tokens)'
+			},
+			boxShadow: {
+				'admin-sm': 'var(--shadow-sm)',
+				'admin-md': 'var(--shadow-md)',
+				'admin-lg': 'var(--shadow-lg)',
+				'admin-card': 'var(--shadow-card)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
