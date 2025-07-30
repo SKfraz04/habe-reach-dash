@@ -1,21 +1,153 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 export default function OTP() {
   const [otp, setOtp] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleVerify = () => {
-    // Mock OTP verification - just navigate to dashboard
-    navigate("/dashboard");
+  useEffect(() => {
+    // Get email from localStorage (set during login)
+    const storedEmail = localStorage.getItem('loginEmail');
+    if (!storedEmail) {
+      toast({
+        title: "Error",
+        description: "No email found. Please login again.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+    setEmail(storedEmail);
+  }, [navigate, toast]);
+
+  const handleVerify = async () => {
+    if (!otp || otp.length !== 6) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid 6-digit OTP",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Email not found. Please login again.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('https://habe-ico-api.zip2box.com/api/utm/manager/verify-otp', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          otp: otp,
+          email: email
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Store authentication token if provided in response
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      
+      // Clear login email from localStorage
+      localStorage.removeItem('loginEmail');
+      
+      toast({
+        title: "Success",
+        description: "OTP verified successfully!",
+      });
+
+      // Navigate to dashboard
+      navigate("/dashboard");
+      
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to verify OTP. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleResendOTP = () => {
-    // Mock resend OTP functionality
-    console.log("OTP resent");
+  const handleResendOTP = async () => {
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Email not found. Please login again.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    setIsResending(true);
+
+    try {
+      const response = await fetch('https://habe-ico-api.zip2box.com/api/utm/manager/login', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      toast({
+        title: "Success",
+        description: "OTP resent successfully. Please check your email.",
+      });
+      
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to resend OTP. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && otp.length === 6) {
+      handleVerify();
+    }
   };
 
   return (
@@ -38,6 +170,8 @@ export default function OTP() {
               maxLength={6}
               value={otp}
               onChange={(value) => setOtp(value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
             >
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
@@ -54,8 +188,9 @@ export default function OTP() {
             onClick={handleVerify}
             className="w-full"
             size="lg"
+            disabled={isLoading || otp.length !== 6}
           >
-            Verify OTP
+            {isLoading ? "Verifying..." : "Verify OTP"}
           </Button>
           
           <div className="text-center space-y-2">
@@ -66,8 +201,9 @@ export default function OTP() {
               variant="link" 
               onClick={handleResendOTP}
               className="text-primary"
+              disabled={isResending}
             >
-              Resend OTP
+              {isResending ? "Sending..." : "Resend OTP"}
             </Button>
           </div>
         </CardContent>

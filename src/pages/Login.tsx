@@ -3,14 +3,71 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleLogin = () => {
-    // Mock login - just navigate to OTP screen
-    navigate("/otp");
+  const handleLogin = async () => {
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('https://habe-ico-api.zip2box.com/api/utm/manager/login', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Store email in localStorage for OTP verification
+      localStorage.setItem('loginEmail', email);
+      
+      toast({
+        title: "Success",
+        description: "Login request sent successfully. Please check your email for OTP.",
+      });
+
+      // Navigate to OTP screen
+      navigate("/otp");
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send login request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
   };
 
   return (
@@ -38,6 +95,8 @@ export default function Login() {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
             />
           </div>
           
@@ -45,8 +104,9 @@ export default function Login() {
             onClick={handleLogin}
             className="w-full"
             size="lg"
+            disabled={isLoading}
           >
-            Login
+            {isLoading ? "Sending..." : "Login"}
           </Button>
           
           <p className="text-center text-sm text-muted-foreground">
