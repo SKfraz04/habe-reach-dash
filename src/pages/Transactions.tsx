@@ -202,11 +202,6 @@ export default function Transactions() {
         <main className="flex-1 overflow-y-auto p-6">
           {/* Page Header */}
           <div className="mb-6">
-            <div className="flex items-center text-sm text-muted-foreground mb-2">
-              <span>Home</span>
-              <span className="mx-2">/</span>
-              <span className="text-foreground">UTM Transactions</span>
-            </div>
             <h1 className="text-3xl font-bold text-foreground mb-2">UTM Transactions</h1>
             <p className="text-muted-foreground">
               View all transactions made through your referral URL

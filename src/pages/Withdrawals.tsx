@@ -96,11 +96,6 @@ const Withdrawals = () => {
           <main className="flex-1 p-6 space-y-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <span>Home</span>
-                  <span>/</span>
-                  <span className="text-primary">Manager Withdrawals</span>
-                </div>
                 <h1 className="text-3xl font-bold text-foreground">Manager Withdrawals</h1>
                 <p className="text-muted-foreground mt-1">
                   View all your withdrawal transactions and request new withdrawals
