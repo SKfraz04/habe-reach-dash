@@ -22,7 +22,7 @@ const sidebarItems = [
 
 export function Sidebar() {
   return (
-    <div className="flex h-screen w-64 flex-col bg-admin-sidebar border-r border-admin-sidebar-border">
+    <div className="flex h-screen w-64 min-w-64 flex-col bg-admin-sidebar border-r border-admin-sidebar-border">
       {/* Logo Section */}
       <div className="flex h-16 items-center justify-center border-b border-admin-sidebar-border px-6">
         <div className="flex items-center space-x-3">

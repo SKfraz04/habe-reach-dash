@@ -106,14 +106,6 @@ const Withdrawals = () => {
                   View all your withdrawal transactions and request new withdrawals
                 </p>
               </div>
-              
-              <Button 
-                onClick={() => setIsRequestModalOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Request Withdrawal
-              </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
