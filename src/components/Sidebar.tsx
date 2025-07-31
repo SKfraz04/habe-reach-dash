@@ -25,8 +25,7 @@ export function Sidebar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('loginEmail');
+    localStorage.removeItem('userData');
     navigate("/");
   };
 
