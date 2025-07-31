@@ -121,9 +121,56 @@ export default function Dashboard() {
       setIsLoading(false);
     }
   };
+  
+  const params = {
+    pageNumber: 1,
+    pageSize: 5,
+    exportRequest: false,
+    refference: true,
+    paymentStatus: '',
+    filter: '',
+    fromDate: '',
+    toDate: '',
+    utmManagerId: managerId
+  };
+  
+  async function getAllTransactions() {
+    try {
+      const response = await axios.get(`${API_CONFIG.BASE_URL}/transactions/getAll`, {
+        params: params,
+        headers: {
+          'accept': 'application/json',
+          'authorization': API_CONFIG.AUTH_TOKEN,
+        }
+      });
+      
+      console.log(response.data, "777777777");
+      
+      return response.data;
+      
+    } catch (error) {
+      console.error('=== API Error ===');
+      
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Status Text:', error.response.statusText);
+        console.error('Headers:', error.response.headers);
+        console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+      } else if (error.request) {
+        console.error('No response received');
+        console.error('Request config:', error.config);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      
+      throw error;
+    }
+  }
 
   useEffect(() => {
     getUtmManager();
+  getAllTransactions()
+
   }, []);
 
   return (
