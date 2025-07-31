@@ -64,8 +64,10 @@ const Withdrawals = () => {
       
       // Get latest auth token and manager ID
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      console.log(userData?.data?.manager?.id,"userData")
+      const manager_Id = userData?.data?.manager?.id || '';
       const authToken = localStorage.getItem('authToken') || userData?.data?.token || userData?.token || '';
-      const managerId = userData?.data?.id || userData?.id || '687a1b6b9aa9183ecf3667bb';
+      const managerId = userData?.data?.manager?.id || '';
       
       if (!authToken) {
         throw new Error('No authentication token found');
@@ -76,13 +78,7 @@ const Withdrawals = () => {
         {
           method: 'GET',
           headers: {
-            'accept': 'application/json',
-            'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
             'authorization': authToken,
-            'origin': window.location.origin,
-            'referer': window.location.origin + '/',
-            'selected-coin': '1',
-            'user-agent': navigator.userAgent,
           },
         }
       );
@@ -100,7 +96,6 @@ const Withdrawals = () => {
         setTotalItems(data.data.totalItems);
         setCurrentPage(data.data.currentPage);
         
-        // Update manager info
         setManagerInfo(prev => ({
           ...prev,
           name: data.data.managerInfo.name,
@@ -143,12 +138,6 @@ const Withdrawals = () => {
   useEffect(() => {
     fetchWithdrawals(currentPage, itemsPerPage);
   }, [currentPage, itemsPerPage]);
-
-  const summary = {
-    totalWithdrawn: managerInfo.totalWithdrawn,
-    pendingAmount: 0, // API doesn't provide pending amount in current response
-    thisMonthWithdrawals: 0 // Would need to calculate from withdrawal dates
-  };
 
   const handleFiltersChange = (filters: any) => {
     // Apply filters to withdrawals
@@ -256,7 +245,7 @@ const Withdrawals = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Total Withdrawn</p>
                     <p className="text-xl font-bold text-green-400">
-                      ${summary.totalWithdrawn.toFixed(2)}
+                      $ 0.00
                     </p>
                   </div>
                 </div>
