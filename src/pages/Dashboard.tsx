@@ -7,6 +7,7 @@ import { RecentTransactions } from "@/components/RecentTransactions";
 import axios from "axios";
 import { API_CONFIG } from "@/lib/config";
 import { useEffect, useState } from "react";
+
 const userDataFromStorage = JSON.parse(localStorage.getItem('userData') || '{}');
 
 const managerData = {
@@ -83,34 +84,48 @@ const recentTransactions = [
 
 export default function Dashboard() {
   const [managerDatas, setManagerDatas] = useState<any>(null);
-const managerId = API_CONFIG.MANAGER_ID;
-async function getUtmManager() {
-  try {
-    const response = await axios.get(`${API_CONFIG.BASE_URL}/utm/managers/${managerId}`, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    setManagerDatas(response?.data?.data);
-    
-  } catch (error) {
-    console.error('Error making API request:');
-    
-    if (error.response) {
-      console.error('Status:', error.response.status);
-      console.error('Headers:', error.response.headers);
-      console.error('Data:', error.response.data);
-    } else if (error.request) {
-      console.error('No response received:', error.request);
-    } else {
-      console.error('Error:', error.message);
-    }
-    
-    throw error;
-  }
-}
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-// getUtmManager();
+  const managerId = API_CONFIG.MANAGER_ID;
+
+  const getUtmManager = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await axios.get(`${API_CONFIG.BASE_URL}/utm/managers/${managerId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Manager API Response:', response.data);
+      setManagerDatas(response?.data?.data);
+      
+    } catch (error) {
+      console.error('Error making API request:');
+      
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Headers:', error.response.headers);
+        console.error('Data:', error.response.data);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error:', error.message);
+      }
+      
+      setError('Failed to fetch manager data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getUtmManager();
+  }, []);
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -119,13 +134,13 @@ async function getUtmManager() {
         <main className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Manager Profile Section */}
           <ManagerProfile
-            name={managerDatas?.name}
-            email={managerDatas?.email}
-            uniqueUrl={managerDatas?.refCode}
+            name={managerDatas?.name || managerData.name}
+            email={managerDatas?.email || managerData.email}
+            uniqueUrl={managerDatas?.refCode || userDataFromStorage?.data?.manager?.refCode}
           />
 
           {/* KPI Cards */}
-          <KPICards data={managerDatas} />
+          <KPICards data={managerDatas || {}} />
 
           {/* Sales Chart */}
           <SalesChart data={chartData} />
