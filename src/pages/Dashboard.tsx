@@ -4,21 +4,15 @@ import { ManagerProfile } from "@/components/ManagerProfile";
 import { KPICards } from "@/components/KPICards";
 import { SalesChart } from "@/components/SalesChart";
 import { RecentTransactions } from "@/components/RecentTransactions";
-
+import axios from "axios";
+import { API_CONFIG } from "@/lib/config";
+import { useEffect, useState } from "react";
 const userDataFromStorage = JSON.parse(localStorage.getItem('userData') || '{}');
-console.log('User Data from localStorage:', userDataFromStorage?.data);
 
 const managerData = {
   name: userDataFromStorage?.data?.manager?.name,
   email: userDataFromStorage?.data?.manager?.email,
   uniqueUrl: `https://habe-ico.zip2box.com/?ref=${userDataFromStorage?.data?.manager?.refCode}`,
-  stats: {
-    totalVolumeGenerated: 2456789.50,
-    totalReferrals: 127,
-    totalEarnings: 4532.05,
-    commissionRate: "10%",
-    totalReferralTokens: 12456.78,
-  },
 };
 
 const chartData = [
@@ -88,6 +82,35 @@ const recentTransactions = [
 ];
 
 export default function Dashboard() {
+  const [managerDatas, setManagerDatas] = useState<any>(null);
+const managerId = API_CONFIG.MANAGER_ID;
+async function getUtmManager() {
+  try {
+    const response = await axios.get(`${API_CONFIG.BASE_URL}/utm/managers/${managerId}`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    setManagerDatas(response?.data?.data);
+    
+  } catch (error) {
+    console.error('Error making API request:');
+    
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Headers:', error.response.headers);
+      console.error('Data:', error.response.data);
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error:', error.message);
+    }
+    
+    throw error;
+  }
+}
+
+// getUtmManager();
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -96,13 +119,13 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Manager Profile Section */}
           <ManagerProfile
-            name={managerData.name}
-            email={managerData.email}
-            uniqueUrl={managerData.uniqueUrl}
+            name={managerDatas?.name}
+            email={managerDatas?.email}
+            uniqueUrl={managerDatas?.refCode}
           />
 
           {/* KPI Cards */}
-          <KPICards data={managerData.stats} />
+          <KPICards data={managerDatas} />
 
           {/* Sales Chart */}
           <SalesChart data={chartData} />

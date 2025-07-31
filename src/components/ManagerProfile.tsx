@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { API_CONFIG } from "@/lib/config";
 
 interface ManagerProfileProps {
   name: string;
@@ -16,7 +17,7 @@ export function ManagerProfile({ name, email, uniqueUrl }: ManagerProfileProps) 
 
   const handleCopyUrl = async () => {
     try {
-      await navigator.clipboard.writeText(uniqueUrl);
+      await navigator.clipboard.writeText(`https://habe-ico.zip2box.com/?ref=${uniqueUrl}`);
       setCopied(true);
       toast({
         title: "URL Copied!",
@@ -56,7 +57,7 @@ export function ManagerProfile({ name, email, uniqueUrl }: ManagerProfileProps) 
             <label className="text-sm font-medium text-muted-foreground">Your Unique Referral URL</label>
             <div className="mt-2 flex items-center space-x-2">
               <div className="flex-1 p-3 bg-muted-light rounded-lg border">
-                <p className="text-sm font-mono text-foreground break-all">{uniqueUrl}</p>
+                <p className="text-sm font-mono text-foreground break-all">{`https://habe-ico.zip2box.com/?ref=${uniqueUrl}`}</p>
               </div>
               <Button
                 onClick={handleCopyUrl}

@@ -11,5 +11,5 @@ export const API_CONFIG = {
     WITHDRAWALS: '/utm/managers/{managerId}/withdrawals',
   },
   AUTH_TOKEN: authToken,
-  MANAGER_ID: userData?.data?.id || userData?.id || '687a1b6b9aa9183ecf3667bb',
+  MANAGER_ID: userData?.data?.manager?.id || '',
 } as const;

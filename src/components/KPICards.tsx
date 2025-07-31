@@ -2,18 +2,6 @@ import { TrendingUp, Users, DollarSign, Percent, Gift } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-interface KPIData {
-  totalVolumeGenerated: number;
-  totalReferrals: number;
-  totalEarnings: number;
-  commissionRate: string;
-  totalReferralTokens: number;
-}
-
-interface KPICardsProps {
-  data: KPIData;
-}
-
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
@@ -28,39 +16,40 @@ const formatLargeNumber = (num: number) => {
   if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'K';
   }
-  return num.toString();
+  return num?.toString();
 };
 
-export function KPICards({ data }: KPICardsProps) {
+export function KPICards({ data }: any) {
+  console.log(data,"dataaaaaaa")
   const kpiItems = [
     {
-      title: "Total Volume Generated",
-      value: `${formatLargeNumber(data.totalVolumeGenerated)} HABE`,
-      fullValue: `${formatNumber(data.totalVolumeGenerated)} HABE`,
-      icon: TrendingUp,
-      gradient: "bg-gradient-volume",
-      textColor: "text-white",
-    },
-    {
       title: "Total Referrals",
-      value: `${data.totalReferrals} Users`,
-      fullValue: `${data.totalReferrals} Users`,
+      value: `${data?.usersReferred} Users`,
+      fullValue: `${data?.usersReferred} Users`,
       icon: Users,
       gradient: "bg-gradient-referrals",
       textColor: "text-white",
     },
     {
+      title: "Total Volume Generated",
+      value: `${formatLargeNumber(data?.tokensSold)} HABE`,
+      fullValue: `${formatNumber(data?.tokensSold)} HABE`,
+      icon: TrendingUp,
+      gradient: "bg-gradient-volume",
+      textColor: "text-white",
+    },
+    {
       title: "Total Earnings",
-      value: `$${formatNumber(data.totalEarnings)} USDT`,
-      fullValue: `$${formatNumber(data.totalEarnings)} USDT`,
+      value: `$${formatNumber(data?.usdStake)} USDT`,
+      fullValue: `$${formatNumber(data?.usdStake)} USDT`,
       icon: DollarSign,
       gradient: "bg-gradient-earnings",
       textColor: "text-white",
     },
     {
       title: "Commission Rate",
-      value: data.commissionRate,
-      fullValue: data.commissionRate,
+      value: data?.commissionPercent,
+      fullValue: data?.commissionPercent,
       icon: Percent,
       gradient: "bg-gradient-commission",
       textColor: "text-white",
@@ -68,8 +57,8 @@ export function KPICards({ data }: KPICardsProps) {
     },
     {
       title: "Total Referral Tokens",
-      value: `${formatLargeNumber(data.totalReferralTokens)} HABE`,
-      fullValue: `${formatNumber(data.totalReferralTokens)} HABE`,
+      value: `${formatLargeNumber(data?.userRewardBalance)} HABE`,
+      fullValue: `${formatNumber(data?.userRewardBalance)} HABE`,
       icon: Gift,
       gradient: "bg-gradient-tokens",
       textColor: "text-white",
