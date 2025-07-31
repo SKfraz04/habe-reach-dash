@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 import { WithdrawalFilters } from '@/components/WithdrawalFilters';
@@ -6,71 +6,194 @@ import { WithdrawalsTable } from '@/components/WithdrawalsTable';
 import { RequestWithdrawalModal } from '@/components/RequestWithdrawalModal';
 import { Button } from '@/components/ui/button';
 import { DollarSign, Plus, Wallet } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { API_CONFIG } from '@/lib/config';
 
-// Sample withdrawal data
-const sampleWithdrawals = [
-  {
-    id: 1,
-    withdrawalDate: "2024-07-22 07:23:00",
-    managerName: "John Doe",
-    managerEmail: "john@example.com",
-    walletAddress: "0xdd33d6b7C9E13D9f86C8e32Ff5b69c7f7742b794",
-    amount: 20.00,
-    transactionHash: "0x1234567890abcdef1234567890abcdef12345678",
-    status: "completed" as const,
-    remark: "Regular withdrawal",
-    processingDate: "2024-07-22 08:15:00",
-    withdrawalId: "WD-2024-001",
-    processingFee: 1.00,
-    finalAmount: 19.00,
-    adminRemarks: "Processed successfully by admin"
-  },
-  {
-    id: 2,
-    withdrawalDate: "2024-07-25 14:30:00",
-    managerName: "John Doe",
-    managerEmail: "john@example.com", 
-    walletAddress: "0xdd33d6b7C9E13D9f86C8e32Ff5b69c7f7742b794",
-    amount: 150.00,
-    transactionHash: null,
-    status: "pending" as const,
-    remark: "Monthly withdrawal",
-    processingDate: null,
-    withdrawalId: "WD-2024-002",
-    adminRemarks: "Under review by finance team"
-  }
-];
+interface Withdrawal {
+  id: string;
+  withdrawAmount: number;
+  remark: string;
+  withdrawalDate: string;
+  managerInfo: {
+    walletAddress: string;
+    name: string;
+    email: string;
+  };
+}
+
+interface WithdrawalsResponse {
+  status: number;
+  message: string;
+  data: {
+    withdrawals: Withdrawal[];
+    totalItems: number;
+    currentPage: number;
+    totalPages: number;
+    managerInfo: {
+      id: string;
+      name: string;
+      email: string;
+      totalWithdrawn: number;
+    };
+  };
+  error: string;
+}
 
 const Withdrawals = () => {
-  const [withdrawals, setWithdrawals] = useState(sampleWithdrawals);
-  const [filteredWithdrawals, setFilteredWithdrawals] = useState(sampleWithdrawals);
+  const { toast } = useToast();
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [filteredWithdrawals, setFilteredWithdrawals] = useState<Withdrawal[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  
-  const managerData = {
-    name: "John Doe",
-    email: "john@example.com",
-    walletAddress: "0xdd33d6b7C9E13D9f86C8e32Ff5b69c7f7742b794",
-    availableBalance: 1250.50
+  const [managerInfo, setManagerInfo] = useState({
+    name: "",
+    email: "",
+    walletAddress: "",
+    availableBalance: 0,
+    totalWithdrawn: 0
+  });
+
+  // Fetch withdrawals from API
+  const fetchWithdrawals = async (page: number = 1, limit: number = 10) => {
+    try {
+      setIsLoading(true);
+      
+      // Get latest auth token and manager ID
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const authToken = localStorage.getItem('authToken') || userData?.data?.token || userData?.token || '';
+      const managerId = userData?.data?.id || userData?.id || '687a1b6b9aa9183ecf3667bb';
+      
+      if (!authToken) {
+        throw new Error('No authentication token found');
+      }
+      
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/utm/managers/${managerId}/withdrawals?page=${page}&limit=${limit}`,
+        {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json',
+            'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+            'authorization': authToken,
+            'origin': window.location.origin,
+            'referer': window.location.origin + '/',
+            'selected-coin': '1',
+            'user-agent': navigator.userAgent,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: WithdrawalsResponse = await response.json();
+      
+      if (data.status === 200) {
+        setWithdrawals(data.data.withdrawals);
+        setFilteredWithdrawals(data.data.withdrawals);
+        setTotalPages(data.data.totalPages);
+        setTotalItems(data.data.totalItems);
+        setCurrentPage(data.data.currentPage);
+        
+        // Update manager info
+        setManagerInfo(prev => ({
+          ...prev,
+          name: data.data.managerInfo.name,
+          email: data.data.managerInfo.email,
+          totalWithdrawn: data.data.managerInfo.totalWithdrawn,
+          walletAddress: data.data.withdrawals[0]?.managerInfo.walletAddress || prev.walletAddress
+        }));
+      } else {
+        throw new Error(data.message || 'Failed to fetch withdrawals');
+      }
+    } catch (error) {
+      console.error('Error fetching withdrawals:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch withdrawals. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Initial data fetch
+  useEffect(() => {
+    // Refresh config to get latest auth token
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const authToken = localStorage.getItem('authToken') || userData?.data?.token || userData?.token || '';
+    
+    if (!authToken) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to view withdrawals.",
+      });
+      return;
+    }
+    
+    fetchWithdrawals(currentPage, itemsPerPage);
+  }, []);
+
+  // Fetch data when page or items per page changes
+  useEffect(() => {
+    fetchWithdrawals(currentPage, itemsPerPage);
+  }, [currentPage, itemsPerPage]);
+
   const summary = {
-    totalWithdrawn: withdrawals.filter(w => w.status === 'completed').reduce((sum, w) => sum + (w.finalAmount || w.amount), 0),
-    pendingAmount: withdrawals.filter(w => w.status === 'pending').reduce((sum, w) => sum + w.amount, 0),
-    thisMonthWithdrawals: 94.75
+    totalWithdrawn: managerInfo.totalWithdrawn,
+    pendingAmount: 0, // API doesn't provide pending amount in current response
+    thisMonthWithdrawals: 0 // Would need to calculate from withdrawal dates
   };
 
   const handleFiltersChange = (filters: any) => {
-    setFilteredWithdrawals(withdrawals);
+    // Apply filters to withdrawals
+    let filtered = [...withdrawals];
+    
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filtered = filtered.filter(w => 
+        w.managerInfo.name.toLowerCase().includes(searchTerm) ||
+        w.managerInfo.email.toLowerCase().includes(searchTerm) ||
+        w.remark.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    if (filters.dateFrom) {
+      filtered = filtered.filter(w => 
+        new Date(w.withdrawalDate) >= new Date(filters.dateFrom)
+      );
+    }
+    
+    if (filters.dateTo) {
+      filtered = filtered.filter(w => 
+        new Date(w.withdrawalDate) <= new Date(filters.dateTo)
+      );
+    }
+    
+    setFilteredWithdrawals(filtered);
   };
 
   const handleSort = (field: string) => {
-    console.log('Sort by:', field);
+    const sorted = [...filteredWithdrawals].sort((a, b) => {
+      switch (field) {
+        case 'withdrawAmount':
+          return b.withdrawAmount - a.withdrawAmount;
+        case 'withdrawalDate':
+          return new Date(b.withdrawalDate).getTime() - new Date(a.withdrawalDate).getTime();
+        default:
+          return 0;
+      }
+    });
+    setFilteredWithdrawals(sorted);
   };
 
   const handleRefresh = () => {
-    setFilteredWithdrawals([...withdrawals]);
+    fetchWithdrawals(currentPage, itemsPerPage);
   };
 
   const handleExport = () => {
@@ -79,11 +202,18 @@ const Withdrawals = () => {
 
   const handleWithdrawalRequest = async (withdrawalData: any) => {
     console.log('New withdrawal request:', withdrawalData);
+    // TODO: Implement withdrawal request API call
+    setIsRequestModalOpen(false);
   };
 
-  const totalPages = Math.ceil(filteredWithdrawals.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedWithdrawals = filteredWithdrawals.slice(startIndex, startIndex + itemsPerPage);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,7 +242,7 @@ const Withdrawals = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Available Balance</p>
                     <p className="text-xl font-bold text-primary">
-                      ${managerData.availableBalance.toFixed(2)}
+                      ${managerInfo.availableBalance.toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -140,13 +270,15 @@ const Withdrawals = () => {
             />
 
             <WithdrawalsTable
-              withdrawals={paginatedWithdrawals}
+              withdrawals={filteredWithdrawals}
               currentPage={currentPage}
               totalPages={totalPages}
               itemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={setItemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
               onSort={handleSort}
+              isLoading={isLoading}
+              onRefresh={handleRefresh}
             />
           </main>
         </div>
@@ -155,8 +287,8 @@ const Withdrawals = () => {
       <RequestWithdrawalModal
         isOpen={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
-        availableBalance={managerData.availableBalance}
-        managerWallet={managerData.walletAddress}
+        availableBalance={managerInfo.availableBalance}
+        managerWallet={managerInfo.walletAddress}
         onSubmit={handleWithdrawalRequest}
       />
     </div>

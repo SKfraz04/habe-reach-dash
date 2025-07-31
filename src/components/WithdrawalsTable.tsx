@@ -1,25 +1,21 @@
-import React, { useState } from 'react';
-import { Copy, Eye, ArrowUpDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Copy, Eye, ArrowUpDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { API_CONFIG } from '@/lib/config';
 
 interface Withdrawal {
-  id: number;
-  withdrawalDate: string;
-  managerName: string;
-  managerEmail: string;
-  walletAddress: string;
-  amount: number;
-  transactionHash: string | null;
-  status: 'pending' | 'processing' | 'completed' | 'rejected';
+  id: string;
+  withdrawAmount: number;
   remark: string;
-  processingDate: string | null;
-  withdrawalId: string;
-  processingFee?: number;
-  finalAmount?: number;
-  adminRemarks?: string;
+  withdrawalDate: string;
+  managerInfo: {
+    walletAddress: string;
+    name: string;
+    email: string;
+  };
 }
 
 interface WithdrawalsTableProps {
@@ -30,6 +26,8 @@ interface WithdrawalsTableProps {
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (itemsPerPage: number) => void;
   onSort: (column: string) => void;
+  isLoading?: boolean;
+  onRefresh?: () => void;
 }
 
 export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
@@ -40,6 +38,8 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
   onPageChange,
   onItemsPerPageChange,
   onSort,
+  isLoading = false,
+  onRefresh,
 }) => {
   const { toast } = useToast();
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
@@ -52,16 +52,6 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
       description: `${type} copied to clipboard`,
       duration: 2000,
     });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'pending': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'processing': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'rejected': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-    }
   };
 
   const truncateAddress = (address: string) => {
@@ -79,6 +69,17 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
 
   const startIndex = (currentPage - 1) * itemsPerPage;
 
+  if (isLoading) {
+    return (
+      <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-8">
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Loading withdrawals...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
@@ -91,7 +92,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
                 <TableHead className="text-foreground font-semibold">Manager Email</TableHead>
                 <TableHead className="text-foreground font-semibold">Wallet Address</TableHead>
                 <TableHead className="text-foreground font-semibold">
-                  <Button variant="ghost" onClick={() => handleSort('amount')} className="h-auto p-0 font-semibold">
+                  <Button variant="ghost" onClick={() => handleSort('withdrawAmount')} className="h-auto p-0 font-semibold">
                     Withdrawal Amount <ArrowUpDown className="ml-1 h-3 w-3" />
                   </Button>
                 </TableHead>
@@ -104,58 +105,66 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {withdrawals.map((withdrawal, index) => (
-                <TableRow 
-                  key={withdrawal.id} 
-                  className="border-border/30 hover:bg-background/30 transition-colors"
-                >
-                  <TableCell className="font-mono text-sm text-muted-foreground">
-                    {startIndex + index + 1}
+              {withdrawals.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No withdrawals found
                   </TableCell>
-                  <TableCell className="text-foreground font-medium">
-                    {withdrawal.managerName}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {withdrawal.managerEmail}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <code className="text-xs font-mono bg-background/50 px-2 py-1 rounded">
-                        {truncateAddress(withdrawal.walletAddress)}
-                      </code>
+                </TableRow>
+              ) : (
+                withdrawals.map((withdrawal, index) => (
+                  <TableRow 
+                    key={withdrawal.id} 
+                    className="border-border/30 hover:bg-background/30 transition-colors"
+                  >
+                    <TableCell className="font-mono text-sm text-muted-foreground">
+                      {startIndex + index + 1}
+                    </TableCell>
+                    <TableCell className="text-foreground font-medium">
+                      {withdrawal.managerInfo.name}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {withdrawal.managerInfo.email}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs font-mono bg-background/50 px-2 py-1 rounded">
+                          {truncateAddress(withdrawal.managerInfo.walletAddress)}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(withdrawal.managerInfo.walletAddress, 'Wallet address')}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-foreground font-semibold">
+                      ${withdrawal.withdrawAmount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-foreground">
+                      <div className="text-sm">
+                        {new Date(withdrawal.withdrawalDate).toLocaleDateString()}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(withdrawal.withdrawalDate).toLocaleTimeString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => copyToClipboard(withdrawal.walletAddress, 'Wallet address')}
-                        className="h-6 w-6 p-0"
+                        onClick={() => handleViewRemarks(withdrawal)}
+                        className="h-8 w-8 p-0"
                       >
-                        <Copy className="h-3 w-3" />
+                        <Eye className="h-4 w-4" />
                       </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-foreground font-semibold">
-                    ${withdrawal.amount.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-foreground">
-                    <div className="text-sm">
-                      {new Date(withdrawal.withdrawalDate).toLocaleDateString()}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(withdrawal.withdrawalDate).toLocaleTimeString()}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleViewRemarks(withdrawal)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
@@ -169,6 +178,7 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
               onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
               className="border border-border/50 bg-background/80 rounded px-2 py-1 text-foreground"
             >
+              <option value={10}>10</option>
               <option value={25}>25</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
@@ -207,11 +217,11 @@ export const WithdrawalsTable: React.FC<WithdrawalsTableProps> = ({
       <Dialog open={isRemarksModalOpen} onOpenChange={setIsRemarksModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Admin Remarks</DialogTitle>
+            <DialogTitle>Withdrawal Remarks</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            {selectedWithdrawal?.adminRemarks ? (
-              <p className="text-sm text-foreground">{selectedWithdrawal.adminRemarks}</p>
+            {selectedWithdrawal?.remark ? (
+              <p className="text-sm text-foreground">{selectedWithdrawal.remark}</p>
             ) : (
               <p className="text-sm text-muted-foreground">No remarks</p>
             )}

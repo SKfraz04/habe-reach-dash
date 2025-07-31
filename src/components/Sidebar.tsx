@@ -10,12 +10,12 @@ const sidebarItems = [
     icon: Home,
   },
   {
-    title: "UTM Transactions",
+    title: "Transactions",
     href: "/transactions",
     icon: CreditCard,
   },
   {
-    title: "Manager Withdrawals",
+    title: "Withdrawals",
     href: "/withdrawals",
     icon: DollarSign,
   },
