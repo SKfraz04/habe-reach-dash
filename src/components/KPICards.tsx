@@ -1,4 +1,4 @@
-import { TrendingUp, Users, DollarSign, Percent, Gift } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Percent, Gift, Wallet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -20,7 +20,6 @@ const formatLargeNumber = (num: number) => {
 };
 
 export function KPICards({ data }: any) {
-  console.log(data,"dataaaaaaa")
   const kpiItems = [
     {
       title: "Total Referrals",
@@ -32,28 +31,28 @@ export function KPICards({ data }: any) {
     },
     {
       title: "Total Volume Generated",
-      value: `${formatLargeNumber(data?.tokensSold)} HABE`,
-      fullValue: `${formatNumber(data?.tokensSold)} HABE`,
-      icon: TrendingUp,
-      gradient: "bg-gradient-volume",
-      textColor: "text-white",
-    },
-    {
-      title: "Total Earnings",
-      value: `$${formatNumber(data?.usdStake)} USDT`,
-      fullValue: `$${formatNumber(data?.usdStake)} USDT`,
+      value: `$${formatNumber(data?.usdStake?.toLocaleString())} USDT`,
+      fullValue: `$${formatNumber(data?.usdStake?.toLocaleString())} USDT`,
       icon: DollarSign,
       gradient: "bg-gradient-earnings",
       textColor: "text-white",
     },
     {
-      title: "Commission Rate",
-      value: data?.commissionPercent,
-      fullValue: data?.commissionPercent,
-      icon: Percent,
+      title: "Total Earnings",
+      value: `${formatLargeNumber(data?.managerBalanceUSD?.toLocaleString())} USDT`,
+      fullValue: `${formatNumber(data?.managerBalanceUSD?.toLocaleString())} USDT`,
+      icon: TrendingUp,
+      gradient: "bg-gradient-volume",
+      textColor: "text-white",
+    },
+    {
+      title: "Balance",
+      value: `${data?.openBalUSD?.toLocaleString()} USDT`,
+      fullValue: `${data?.openBalUSD?.toLocaleString()} USDT`,
+      icon: Wallet,
       gradient: "bg-gradient-commission",
       textColor: "text-white",
-      badge: "Admin Set",
+      // badge: "Admin Set",
     },
     {
       title: "Total Referral Tokens",

@@ -9,9 +9,10 @@ interface ManagerProfileProps {
   name: string;
   email: string;
   uniqueUrl: string;
+  data: any;
 }
 
-export function ManagerProfile({ name, email, uniqueUrl }: ManagerProfileProps) {
+export function ManagerProfile({ name, email, uniqueUrl, data }: ManagerProfileProps) {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
@@ -36,13 +37,8 @@ export function ManagerProfile({ name, email, uniqueUrl }: ManagerProfileProps) 
   return (
     <Card className="shadow-admin-card">
       <CardContent className="p-6">
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">Manager Profile</h2>
-            <p className="text-sm text-muted-foreground">Your account information and referral URL</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">       
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Manager Name</label>
               <p className="text-lg font-semibold text-foreground uppercase">{name}</p>
@@ -50,6 +46,10 @@ export function ManagerProfile({ name, email, uniqueUrl }: ManagerProfileProps) 
             <div>
               <label className="text-sm font-medium text-muted-foreground">Email Address</label>
               <p className="text-lg text-foreground">{email}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Commission Rate</label>
+              <p className="text-lg text-foreground">{data?.commissionPercent}%</p>
             </div>
           </div>
           

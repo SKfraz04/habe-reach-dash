@@ -14,6 +14,7 @@ const managerData = {
   name: userDataFromStorage?.data?.manager?.name,
   email: userDataFromStorage?.data?.manager?.email,
   uniqueUrl: `https://habe-ico.zip2box.com/?ref=${userDataFromStorage?.data?.manager?.refCode}`,
+  data: "",
 };
 
 const chartData = [
@@ -29,63 +30,11 @@ const chartData = [
   { date: "Jan 10", volumeGenerated: 38000, earnings: 3800, tokensDistributed: 190000 },
 ];
 
-const recentTransactions = [
-  {
-    id: "1",
-    date: "2024-01-10",
-    transactionHash: "0x1234567890abcdef1234567890abcdef12345678",
-    userWallet: "0xabcdef1234567890abcdef1234567890abcdef12",
-    volumeUSDT: 5000,
-    tokensDistributed: 25000,
-    managerEarnings: 500,
-    status: "completed" as const,
-  },
-  {
-    id: "2",
-    date: "2024-01-10",
-    transactionHash: "0x2345678901bcdef12345678901bcdef123456789",
-    userWallet: "0xbcdef12345678901bcdef12345678901bcdef123",
-    volumeUSDT: 3200,
-    tokensDistributed: 16000,
-    managerEarnings: 320,
-    status: "completed" as const,
-  },
-  {
-    id: "3",
-    date: "2024-01-09",
-    transactionHash: "0x3456789012cdef123456789012cdef1234567890",
-    userWallet: "0xcdef123456789012cdef123456789012cdef1234",
-    volumeUSDT: 7500,
-    tokensDistributed: 37500,
-    managerEarnings: 750,
-    status: "pending" as const,
-  },
-  {
-    id: "4",
-    date: "2024-01-09",
-    transactionHash: "0x456789013def1234567890123def12345678901",
-    userWallet: "0xdef1234567890123def1234567890123def12345",
-    volumeUSDT: 2100,
-    tokensDistributed: 10500,
-    managerEarnings: 210,
-    status: "completed" as const,
-  },
-  {
-    id: "5",
-    date: "2024-01-08",
-    transactionHash: "0x56789014ef123456789014ef123456789014ef12",
-    userWallet: "0xef123456789014ef123456789014ef123456789",
-    volumeUSDT: 8900,
-    tokensDistributed: 44500,
-    managerEarnings: 890,
-    status: "failed" as const,
-  },
-];
-
 export default function Dashboard() {
   const [managerDatas, setManagerDatas] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<any>(null);
 
   const managerId = API_CONFIG.MANAGER_ID;
 
@@ -107,8 +56,6 @@ export default function Dashboard() {
       console.error('Error making API request:');
       
       if (error.response) {
-        console.error('Status:', error.response.status);
-        console.error('Headers:', error.response.headers);
         console.error('Data:', error.response.data);
       } else if (error.request) {
         console.error('No response received:', error.request);
@@ -143,9 +90,7 @@ export default function Dashboard() {
           'authorization': API_CONFIG.AUTH_TOKEN,
         }
       });
-      
-      console.log(response.data, "777777777");
-      
+      setTransactions(response.data?.data);
       return response.data;
       
     } catch (error) {
@@ -184,6 +129,7 @@ export default function Dashboard() {
             name={managerDatas?.name || managerData.name}
             email={managerDatas?.email || managerData.email}
             uniqueUrl={managerDatas?.refCode || userDataFromStorage?.data?.manager?.refCode}
+            data={managerDatas || {}}
           />
 
           {/* KPI Cards */}
@@ -193,7 +139,7 @@ export default function Dashboard() {
           <SalesChart data={chartData} />
 
           {/* Recent Transactions */}
-          <RecentTransactions transactions={recentTransactions} />
+          <RecentTransactions transactions={transactions} />
         </main>
       </div>
     </div>
