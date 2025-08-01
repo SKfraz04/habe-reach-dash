@@ -43,7 +43,7 @@ export function SalesChart({ data }: SalesChartProps) {
     <Card className="shadow-admin-card">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-          <CardTitle className="text-xl font-semibold">Sales Analytics</CardTitle>
+          <CardTitle className="text-xl font-semibold">Analytics</CardTitle>
           <div className="flex flex-col sm:flex-row gap-2">
             <Select value={selectedMetric} onValueChange={setSelectedMetric}>
               <SelectTrigger className="w-full sm:w-[200px]">
