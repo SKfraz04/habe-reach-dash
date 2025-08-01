@@ -74,7 +74,7 @@ export default function Dashboard() {
     pageSize: 5,
     exportRequest: false,
     refference: true,
-    paymentStatus: '',
+         paymentStatus: '',
     filter: '',
     fromDate: '',
     toDate: '',

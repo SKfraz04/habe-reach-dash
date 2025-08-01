@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { TransactionFilters } from "@/components/TransactionFilters";
@@ -6,6 +6,8 @@ import { TransactionsTable } from "@/components/TransactionsTable";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
+import axios from 'axios';
+import { API_CONFIG } from '@/lib/config';
 
 // Sample transaction data
 const sampleTransactions = [
@@ -125,22 +127,70 @@ export default function Transactions() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [isLoading, setIsLoading] = useState(false);
+  const [transactions, setTransactions] = useState<any>(null);
 
-  // Filter transactions based on search term, status, and date range
+  const params = {
+    pageNumber: currentPage,
+    pageSize: itemsPerPage,
+    exportRequest: false,
+    refference: true,
+    paymentStatus: statusFilter === "all" ? "" : statusFilter,
+    filter: searchTerm,
+    fromDate: dateRange.start,
+    toDate: dateRange.end,
+    utmManagerId: API_CONFIG.MANAGER_ID
+  };
+  
+  async function getAllTransactions() {
+    try {
+      const response = await axios.get(`${API_CONFIG.BASE_URL}/transactions/getAll`, {
+        params: params,
+        headers: {
+          'accept': 'application/json',
+          'authorization': API_CONFIG.AUTH_TOKEN,
+        }
+      });
+      setTransactions(response.data?.data);
+      return response.data;
+      
+    } catch (error) {
+      console.error('=== API Error ===');
+      
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Status Text:', error.response.statusText);
+        console.error('Headers:', error.response.headers);
+        console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+      } else if (error.request) {
+        console.error('No response received');
+        console.error('Request config:', error.config);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      
+      throw error;
+    }
+  }
+
+  useEffect(() => {
+  getAllTransactions()
+
+  }, []);
+
   const filteredTransactions = useMemo(() => {
-    return sampleTransactions.filter(transaction => {
+    return transactions?.items?.filter((transaction: any) => {
       // Search filter
       const searchMatch = !searchTerm || 
-        transaction.transactionHash.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.userWallet.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.purchaseAmount.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.habeTokens.toString().includes(searchTerm);
+        transaction?.transactionHash?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction?.userWallet?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction?.purchaseAmount?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        transaction?.habeTokens?.toString().includes(searchTerm);
 
       // Status filter
-      const statusMatch = statusFilter === "all" || transaction.status === statusFilter;
+      const statusMatch = statusFilter === "all" || transaction?.status === statusFilter;
 
       // Date range filter
-      const transactionDate = new Date(transaction.date);
+      const transactionDate = new Date(transaction?.createdAt);
       const startDateMatch = !dateRange.start || transactionDate >= new Date(dateRange.start);
       const endDateMatch = !dateRange.end || transactionDate <= new Date(dateRange.end + " 23:59:59");
 
@@ -154,24 +204,24 @@ export default function Transactions() {
     return filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredTransactions, currentPage, itemsPerPage]);
 
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const totalPages = Math.ceil(transactions?.totalItems / itemsPerPage);
 
   const handleExport = () => {
     const csvContent = [
       // CSV headers
       ['Sr. No', 'Date', 'Transaction Hash', 'User Wallet', 'Purchase Amount', 'HABE Tokens', 'Manager Earnings', 'Referral Tokens', 'Commission %', 'Status'].join(','),
       // CSV data
-      ...filteredTransactions.map((transaction, index) => [
+      ...filteredTransactions.map((transaction: any, index: number) => [
         index + 1,
-        transaction.date,
-        transaction.transactionHash,
-        transaction.userWallet,
-        transaction.purchaseAmount,
-        transaction.habeTokens,
-        transaction.managerEarnings,
-        transaction.referralTokens,
-        transaction.commissionRate,
-        transaction.status
+        transaction?.createdAt,
+        transaction?.transactionHash,
+        transaction?.walletAddress,
+        transaction?.usdStake,
+        transaction?.tokens,
+        transaction?.utmManagerDetails?.managerEarnings,
+        transaction?.tokens /  transaction?.utmManagerDetails?.commissionPercent,
+        transaction?.utmManagerDetails?.commissionPercent,
+        transaction?.status
       ].join(','))
     ].join('\n');
 
@@ -217,13 +267,14 @@ export default function Transactions() {
             dateRange={dateRange}
             setDateRange={setDateRange}
             onExport={handleExport}
-            resultCount={filteredTransactions.length}
+            resultCount={transactions?.totalItems}
           />
 
           {/* Transactions Table */}
           <TransactionsTable
-            transactions={paginatedTransactions}
+            // transactions={paginatedTransactions}
             isLoading={isLoading}
+            transactionsData={transactions}
           />
 
           {/* Pagination */}
@@ -231,7 +282,7 @@ export default function Transactions() {
             <div className="flex items-center justify-between mt-6">
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted-foreground">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} of {filteredTransactions.length} transactions
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, transactions?.totalItems)} of {transactions?.totalItems} transactions
                 </div>
                 <Select value={itemsPerPage.toString()} onValueChange={(value) => {
                   setItemsPerPage(parseInt(value));

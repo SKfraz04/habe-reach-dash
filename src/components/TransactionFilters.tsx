@@ -33,7 +33,7 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search by transaction hash, wallet address, or amount..."
+            placeholder="Search by wallet address..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 bg-background/80"
