@@ -72,11 +72,11 @@ export function KPICards({ data }: any) {
             <div className={`${item.gradient} p-6 rounded-t-lg`}>
               <div className="flex items-center justify-between">
                 <item.icon className={`h-8 w-8 ${item.textColor}`} />
-                {item.badge && (
+                {/* {item.badge && (
                   <Badge variant="secondary" className="text-xs">
                     {item.badge}
                   </Badge>
-                )}
+                )} */}
               </div>
               <div className="mt-4">
                 <p className={`text-sm ${item.textColor} opacity-90`}>{item.title}</p>
