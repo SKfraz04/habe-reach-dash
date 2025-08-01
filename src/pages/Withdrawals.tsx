@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { DollarSign, Plus, Wallet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { API_CONFIG } from '@/lib/config';
+import axios from 'axios';
 
 interface Withdrawal {
   id: string;
@@ -49,6 +50,10 @@ const Withdrawals = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [managerDatas, setManagerDatas] = useState<any>(null);
+  console.log(managerDatas, "managerDatas");
+  const [error, setError] = useState<string | null>(null);
+  const managerId = API_CONFIG.MANAGER_ID;
   const [managerInfo, setManagerInfo] = useState({
     name: "",
     email: "",
@@ -117,6 +122,37 @@ const Withdrawals = () => {
     }
   };
 
+  const getUtmManager = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await axios.get(`${API_CONFIG.BASE_URL}/utm/managers/${managerId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Manager API Response:', response.data);
+      setManagerDatas(response?.data?.data);
+      
+    } catch (error) {
+      console.error('Error making API request:');
+      
+      if (error.response) {
+        console.error('Data:', error.response.data);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error:', error.message);
+      }
+      
+      setError('Failed to fetch manager data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Initial data fetch
   useEffect(() => {
     // Refresh config to get latest auth token
@@ -132,6 +168,8 @@ const Withdrawals = () => {
     }
     
     fetchWithdrawals(currentPage, itemsPerPage);
+    getUtmManager();
+
   }, []);
 
   // Fetch data when page or items per page changes
@@ -231,7 +269,7 @@ const Withdrawals = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Available Balance</p>
                     <p className="text-xl font-bold text-primary">
-                      ${managerInfo.availableBalance.toFixed(2)}
+                      ${managerDatas?.openBalUSD?.toFixed(2) || 0}
                     </p>
                   </div>
                 </div>
@@ -245,7 +283,7 @@ const Withdrawals = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Total Withdrawn</p>
                     <p className="text-xl font-bold text-green-400">
-                      $ 0.00
+                      $ {managerDatas?.totalWithdrawnUSD?.toFixed(2) || 0}
                     </p>
                   </div>
                 </div>
