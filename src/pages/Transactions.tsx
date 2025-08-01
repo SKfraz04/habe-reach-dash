@@ -13,7 +13,6 @@ import { API_CONFIG } from '@/lib/config';
 export default function Transactions() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  console.log(searchTerm, "searchTermsearchTermsearchTermsearchTerm");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState({
     start: "",

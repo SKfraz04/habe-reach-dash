@@ -39,7 +39,6 @@ const getStatusColor = (status: string) => {
 
 export function RecentTransactions({ transactions }: any) {
   const { toast } = useToast();
-  console.log(transactions?.items, "transactions");
   const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -77,18 +76,23 @@ export function RecentTransactions({ transactions }: any) {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
+                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">S.No</th>
                     <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Date</th>
                     <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Tx Hash</th>
-                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">User</th>
-                    <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Volume $</th>
-                    <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Tokens (HABE)</th>
-                    <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Earnings $</th>
-                    <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">User Wallet</th>
+                    <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Amount (USDT)</th>
+                    <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">HABE Tokens</th>
+                    <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Manager Earnings</th>
+                    <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Referee Rewards (HABE)</th>
+                    <th className="text-center py-3 px-2 text-sm font-medium text-muted-foreground">Commission %</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions?.items?.map((tx) => (
+                  {transactions?.items?.map((tx, index) => (
                     <tr key={tx.id} className="border-b border-border last:border-b-0 hover:bg-muted-light/50">
+                      <td className="py-3 px-2 text-sm text-foreground">
+                        {index + 1}
+                      </td>
                       <td className="py-3 px-2 text-sm text-foreground">
                         {new Date(tx.createdAt).toLocaleDateString()}
                       </td>
@@ -139,13 +143,21 @@ export function RecentTransactions({ transactions }: any) {
                         {tx.tokens?.toLocaleString()}
                       </td>
                       <td className="py-3 px-2 text-right text-sm font-medium text-success">
-                        {(tx.usdStake / tx?.utmManagerDetails?.commissionPercent)?.toLocaleString()}
+                      $ {(tx.usdStake / tx?.utmManagerDetails?.commissionPercent)?.toLocaleString()}
+                      </td>
+                      <td className="py-3 px-2 text-right text-sm font-medium text-foreground">
+                        {(tx.tokens / tx?.utmManagerDetails?.commissionPercent)?.toLocaleString()}
                       </td>
                       <td className="py-3 px-2 text-center">
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                          {tx?.utmManagerDetails?.commissionPercent}%
+                        </Badge>
+                      </td>
+                      {/* <td className="py-3 px-2 text-center">
                         <Badge className={`text-xs capitalize ${getStatusColor(tx.status)}`}>
                           {tx.status}
                         </Badge>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>

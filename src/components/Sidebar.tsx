@@ -37,7 +37,7 @@ export function Sidebar() {
           <img src={logo} alt="logo" className="h-10 w-10" />
           <div className="text-admin-sidebar-text">
             <h1 className="text-lg font-bold tracking-wide">HABE</h1>
-            <p className="text-sm opacity-75 font-medium">DIGITAL INNOVATION</p>
+            <p className="text-sm opacity-75 font-medium">UTM Manager Dashboard</p>
           </div>
         </div>
       </div>

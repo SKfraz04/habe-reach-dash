@@ -38,7 +38,6 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
   isLoading,
   transactionsData
 }) => {
-  console.log(transactionsData, "transactionsDatatransactionsDatatransactionsDatatransactionsData");
   const { toast } = useToast();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -78,7 +77,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
   // const sortedTransactions = [...transactionsData?.items].sort((a, b) => {
   //   let aValue: any, bValue: any;
-    
+
   //   switch (sortField) {
   //     case 'date':
   //       aValue = new Date(a.date);
@@ -151,7 +150,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
             <TableHeader>
               <TableRow className="hover:bg-transparent border-border/50">
                 <TableHead className="w-16 font-semibold">S No</TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-accent/50 font-semibold"
                   onClick={() => handleSort('date')}
                 >
@@ -163,7 +162,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 <TableHead className="font-semibold">Transaction Hash</TableHead>
                 <TableHead className="font-semibold">User Wallet</TableHead>
                 <TableHead className="font-semibold">Amount (USDT)</TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-accent/50 font-semibold"
                   onClick={() => handleSort('habeTokens')}
                 >
@@ -172,7 +171,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                     <SortIcon field="habeTokens" />
                   </div>
                 </TableHead>
-                <TableHead 
+                <TableHead
                   className="cursor-pointer hover:bg-accent/50 font-semibold"
                   onClick={() => handleSort('managerEarnings')}
                 >
@@ -199,8 +198,8 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
             </TableHeader>
             <TableBody>
               {transactionsData?.items?.map((transaction: any, index: number) => (
-                <TableRow 
-                  key={transaction?.id} 
+                <TableRow
+                  key={transaction?.id}
                   className="hover:bg-accent/30 border-border/30 cursor-pointer"
                   onClick={() => openTransactionDetails(transaction)}
                 >
@@ -215,7 +214,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                       </div>
                     </div>
                   </TableCell>
-           <TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       <code className="text-xs bg-background/80 px-2 py-1 rounded font-mono">
                         {truncateAddress(transaction?.transactionHash)}
@@ -244,7 +243,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                       </Button>
                     </div>
                   </TableCell>
-                        <TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       <code className="text-xs bg-background/80 px-2 py-1 rounded font-mono">
                         {truncateAddress(transaction?.walletAddress)}
@@ -262,7 +261,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                       </Button>
                     </div>
                   </TableCell>
-        <TableCell className="font-medium text-primary">
+                  <TableCell className="font-medium text-primary">
                     {transaction?.usdStake}
                   </TableCell>
                   <TableCell className="font-medium">
@@ -271,10 +270,10 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                   <TableCell className="font-medium text-green-400">
                     ${(transaction?.usdStake / transaction?.utmManagerDetails?.commissionPercent)?.toFixed(2)}
                   </TableCell>
-                       <TableCell className="font-medium text-violet-400">
-                    {(transaction?.tokens /  transaction?.utmManagerDetails?.commissionPercent)?.toFixed(2)} HABE
+                  <TableCell className="font-medium text-violet-400">
+                    {(transaction?.tokens / transaction?.utmManagerDetails?.commissionPercent)?.toFixed(2)} HABE
                   </TableCell>
-                        <TableCell>
+                  <TableCell>
                     <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                       {transaction?.utmManagerDetails?.commissionPercent}%
                     </Badge>
